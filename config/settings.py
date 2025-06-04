@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     #Myapps
     "tools",
+    "base64_tools",
 ]
 
 MIDDLEWARE = [

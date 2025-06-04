@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Base64 Кодировщик / Декодировщик</title>
+    <style>
+      textarea {
+        width: 100%;
+        height: 100px;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Base64 Кодировщик / Декодировщик</h1>
+
+    <form method="post">
+      {% csrf_token %}
+      <textarea name="text" rows="5" cols="50" placeholder="Введите текст">
+{{ decoded }}</textarea
+      ><br /><br />
+      <button type="submit" name="action" value="encode">Кодировать</button>
+      <button type="submit" name="action" value="decode">Декодировать</button>
+    </form>
+
+    <!-- Отдельное окно с результатом -->
+    <div class="result">
+      <h2>Результат:</h2>
+      {% if encoded %}
+      <p><strong>Закодированный текст:</strong> {{ encoded }}</p>
+      {% endif %}
+    </div>
+  </body>
+</html>
