@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     #Myapps
     "tools",
-    "base64_tools",
     "token_generator",
+    "base64_tools",
 ]
 
 MIDDLEWARE = [
@@ -64,9 +64,11 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "tools.context_processors.user_history",
             ],
         },
     },

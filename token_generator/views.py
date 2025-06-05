@@ -4,6 +4,7 @@ from django.views import View
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Token
+from tools.models import UserHistory
 
 # Create your views here.
 
@@ -20,6 +21,14 @@ class GenerateTokenView(LoginRequiredMixin, View):
     def post(self, request):
         token = Token.generate_token(user=request.user)
         messages.success(request, f'Новый токен сгенерирован: {token.token}')
+        
+        # Записываем действие в историю
+        UserHistory.objects.create(
+            user=request.user,
+            action_type='Генерация токена',
+            details=f'Создан новый токен: {token.token[:8]}...'
+        )
+        
         return redirect('token-list')
 
     def get(self, request):
@@ -28,6 +37,15 @@ class GenerateTokenView(LoginRequiredMixin, View):
 class DeleteTokenView(LoginRequiredMixin, View):
     def post(self, request, token_id):
         token = get_object_or_404(Token, id=token_id, user=request.user)
+        token_preview = token.token[:8]
         token.delete()
+        
+        # Записываем действие в историю
+        UserHistory.objects.create(
+            user=request.user,
+            action_type='Удаление токена',
+            details=f'Удален токен: {token_preview}...'
+        )
+        
         messages.success(request, 'Токен успешно удален')
         return redirect('token-list')

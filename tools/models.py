@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Users(models.Model):
@@ -25,3 +26,17 @@ class Histories(models.Model):
     class Meta:
         verbose_name = 'History'
         verbose_name_plural = 'Histories'
+
+class UserHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='history')
+    action_type = models.CharField(max_length=100)
+    details = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'История действий'
+        verbose_name_plural = 'История действий'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action_type} - {self.timestamp}"
