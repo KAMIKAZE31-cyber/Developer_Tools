@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .tools import base64_encode, base64_decode
 
+@login_required
 def base64_tool(request):
     encoded = ''
     decoded = ''

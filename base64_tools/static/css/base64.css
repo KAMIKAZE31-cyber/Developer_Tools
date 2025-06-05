@@ -1,0 +1,53 @@
+/* base64_tools/static/css/base64.css */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 40px 0;
+}
+
+.container {
+    max-width: 700px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.result-box {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-left: 5px solid #0d6efd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+}
+
+.btn-custom {
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    transform: scale(1.05);
+}
+
+.copy-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+.alert pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center">Developer Tools</h1>
+            <p class="text-center text-muted">Коллекция полезных инструментов для разработчиков</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Token Generator -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 tool-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-key fa-2x text-primary me-3"></i>
+                        <h5 class="card-title mb-0">Token Generator</h5>
+                    </div>
+                    <p class="card-text">Генерация безопасных токенов для аутентификации и авторизации</p>
+                    <a href="{% url 'token-list' %}" class="btn btn-primary">Открыть</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base64 Tools -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 tool-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-exchange-alt fa-2x text-success me-3"></i>
+                        <h5 class="card-title mb-0">Base64 Tools</h5>
+                    </div>
+                    <p class="card-text">Кодирование и декодирование данных в формате Base64</p>
+                    <a href="{% url 'base64_tool' %}" class="btn btn-success">Открыть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tool-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tool-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %} 
