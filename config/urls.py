@@ -20,4 +20,5 @@ urlpatterns = [
     ), name='login'),
     path('logout/', tools_views.logout_view, name='logout'),
     path('register/', tools_views.register, name='register'),
+    path('clear-history/', tools_views.clear_history, name='clear_history'),
 ]

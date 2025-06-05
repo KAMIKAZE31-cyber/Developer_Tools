@@ -1,6 +1,6 @@
 from django.db import models
-import secrets
 from django.contrib.auth.models import User
+import secrets
 
 class Token(models.Model):
     token = models.CharField(max_length=64, unique=True)

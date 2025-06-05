@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
+from .models import UserHistory
 
 def base64_tool(request):
     result = ""
@@ -78,3 +79,10 @@ def logout_view(request):
         messages.success(request, 'Вы успешно вышли из системы.')
         return redirect('tools_home')
     return render(request, 'tools/logout.html')
+
+@login_required
+def clear_history(request):
+    if request.method == 'POST':
+        UserHistory.objects.filter(user=request.user).delete()
+        messages.success(request, 'История действий очищена')
+    return redirect(request.META.get('HTTP_REFERER', '/'))
