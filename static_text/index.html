@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализатор текста</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Анализатор текста</h1>
+        <div class="input-section">
+            <textarea id="textInput" placeholder="Введите ваш текст здесь..."></textarea>
+        </div>
+        <div class="stats-section">
+            <div class="stat-item">
+                <label>Всего символов:</label>
+                <span id="totalChars">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Букв:</label>
+                <span id="letters">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Заглавных букв:</label>
+                <span id="upperCase">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Строчных букв:</label>
+                <span id="lowerCase">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Пробелов:</label>
+                <span id="spaces">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Специальных символов:</label>
+                <span id="specialChars">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Цифр:</label>
+                <span id="digits">0</span>
+            </div>
+            <div class="stat-item">
+                <label>Слов:</label>
+                <span id="words">0</span>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

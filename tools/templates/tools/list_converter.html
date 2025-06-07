@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Конвертер списков{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-center mb-0">Конвертер списков</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="inputText" class="form-label">Введите текст:</label>
+                        <textarea id="inputText" class="form-control" rows="8" placeholder="Введите ваш текст здесь..."></textarea>
+                    </div>
+                    <div class="mt-3">
+                        <button id="undoBtn" class="btn btn-secondary" disabled>
+                            <i class="fas fa-undo"></i> Отменить
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Выберите действие:</label>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary convert-btn" data-action="lowercase">
+                                <i class="fas fa-font"></i> Все буквы строчные
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="uppercase">
+                                <i class="fas fa-font"></i> Все буквы ПРОПИСНЫЕ
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="capitalize">
+                                <i class="fas fa-font"></i> Каждое Слово С Большой Буквы
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="sentence">
+                                <i class="fas fa-paragraph"></i> Каждое предложение с большой буквы
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="commas">
+                                <i class="fas fa-comma"></i> Добавить запятые после слов
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="remove-spaces">
+                                <i class="fas fa-compress-alt"></i> Убрать все пробелы
+                            </button>
+                            <button class="btn btn-primary convert-btn" data-action="trim-lines">
+                                <i class="fas fa-align-left"></i> Убрать пробелы в начале и конце строк
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputText = document.getElementById('inputText');
+    const undoBtn = document.getElementById('undoBtn');
+    const convertBtns = document.querySelectorAll('.convert-btn');
+    let history = [];
+
+    // Функция для сохранения действия в историю на сервере
+    async function saveActionToHistory(action, text, result) {
+        try {
+            const response = await fetch("{% url 'tools:save_list_converter_action' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    text: text,
+                    result: result
+                })
+            });
+            const data = await response.json();
+            if (data.status !== 'success') {
+                console.error('Error saving action:', data.message);
+            }
+        } catch (error) {
+            console.error('Error saving action:', error);
+        }
+    }
+
+    function updateUndoButton() {
+        undoBtn.disabled = history.length === 0;
+    }
+
+    function addToHistory(text) {
+        history.push(text);
+        updateUndoButton();
+    }
+
+    undoBtn.addEventListener('click', function() {
+        if (history.length > 1) {
+            history.pop(); // Удаляем текущее состояние
+            inputText.value = history[history.length - 1]; // Восстанавливаем предыдущее
+        } else if (history.length === 1) {
+            history.pop();
+            inputText.value = '';
+        }
+        updateUndoButton();
+    });
+
+    convertBtns.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const action = this.dataset.action;
+            const originalText = inputText.value;
+            let result = originalText;
+
+            switch(action) {
+                case 'lowercase':
+                    result = originalText.toLowerCase();
+                    break;
+                case 'uppercase':
+                    result = originalText.toUpperCase();
+                    break;
+                case 'capitalize':
+                    result = originalText.split(' ')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(' ');
+                    break;
+                case 'sentence':
+                    result = originalText.toLowerCase()
+                        .replace(/(^\w|\.\s+\w)/g, letter => letter.toUpperCase());
+                    break;
+                case 'commas':
+                    result = originalText.split(' ')
+                        .filter(word => word.length > 0)
+                        .join(', ');
+                    break;
+                case 'remove-spaces':
+                    result = originalText.replace(/\s+/g, '');
+                    break;
+                case 'trim-lines':
+                    result = originalText.split('\n')
+                        .map(line => line.trim())
+                        .join('\n');
+                    break;
+            }
+
+            // Сохраняем действие в историю на сервере
+            await saveActionToHistory(action, originalText, result);
+
+            inputText.value = result;
+            addToHistory(result);
+        });
+    });
+
+    // Добавляем начальное состояние в историю
+    if (inputText.value) {
+        addToHistory(inputText.value);
+    }
+});
+</script>
+
+<style>
+.btn-primary {
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateX(5px);
+}
+
+.form-control {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %} 

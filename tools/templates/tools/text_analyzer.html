@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Анализатор текста{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-center mb-0">Анализатор текста</h2>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <textarea id="textInput" class="form-control" rows="8" placeholder="Введите ваш текст здесь..."></textarea>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Основная статистика</h5>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Всего символов:</span>
+                                <span id="totalChars" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Букв:</span>
+                                <span id="letters" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Слов:</span>
+                                <span id="words" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Строк:</span>
+                                <span id="lines" class="font-weight-bold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Детальная статистика</h5>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Заглавных букв:</span>
+                                <span id="upperCase" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Строчных букв:</span>
+                                <span id="lowerCase" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Пробелов:</span>
+                                <span id="spaces" class="font-weight-bold">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Специальных символов:</span>
+                                <span id="specialChars" class="font-weight-bold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textInput = document.getElementById('textInput');
+    const stats = {
+        totalChars: document.getElementById('totalChars'),
+        letters: document.getElementById('letters'),
+        words: document.getElementById('words'),
+        lines: document.getElementById('lines'),
+        upperCase: document.getElementById('upperCase'),
+        lowerCase: document.getElementById('lowerCase'),
+        spaces: document.getElementById('spaces'),
+        specialChars: document.getElementById('specialChars')
+    };
+
+    function analyzeText(text) {
+        return {
+            totalChars: text.length,
+            letters: (text.match(/[a-zA-Zа-яА-ЯёЁ]/g) || []).length,
+            words: text.trim() ? text.trim().split(/\s+/).length : 0,
+            lines: text.split('\n').length,
+            upperCase: (text.match(/[A-ZА-ЯЁ]/g) || []).length,
+            lowerCase: (text.match(/[a-zа-яё]/g) || []).length,
+            spaces: (text.match(/\s/g) || []).length,
+            specialChars: (text.match(/[^a-zA-Zа-яА-ЯёЁ\s\d]/g) || []).length
+        };
+    }
+
+    function updateStats(textStats) {
+        for (const [key, element] of Object.entries(stats)) {
+            element.textContent = textStats[key];
+        }
+    }
+
+    textInput.addEventListener('input', function() {
+        const text = this.value;
+        const textStats = analyzeText(text);
+        updateStats(textStats);
+    });
+});
+</script>
+{% endblock %} 

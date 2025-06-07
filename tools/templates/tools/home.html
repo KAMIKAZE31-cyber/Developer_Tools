@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container mt-4">
@@ -14,13 +15,13 @@
         <!-- Token Generator -->
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card h-100 tool-card">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <div class="d-flex align-items-center mb-3">
                         <i class="fas fa-key fa-2x text-primary me-3"></i>
                         <h5 class="card-title mb-0">Token Generator</h5>
                     </div>
-                    <p class="card-text">Генерация безопасных токенов для аутентификации и авторизации</p>
-                    <a href="{% url 'token-list' %}" class="btn btn-primary">Открыть</a>
+                    <p class="card-text flex-grow-1">Генерация безопасных токенов для аутентификации и авторизации</p>
+                    <a href="{% url 'token_generator:home' %}" class="btn btn-primary mt-auto">Открыть</a>
                 </div>
             </div>
         </div>
@@ -28,13 +29,41 @@
         <!-- Base64 Tools -->
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card h-100 tool-card">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <div class="d-flex align-items-center mb-3">
                         <i class="fas fa-exchange-alt fa-2x text-success me-3"></i>
                         <h5 class="card-title mb-0">Base64 Tools</h5>
                     </div>
-                    <p class="card-text">Кодирование и декодирование данных в формате Base64</p>
-                    <a href="{% url 'base64_tool' %}" class="btn btn-success">Открыть</a>
+                    <p class="card-text flex-grow-1">Кодирование и декодирование данных в формате Base64</p>
+                    <a href="{% url 'base64_tools:home' %}" class="btn btn-success mt-auto">Открыть</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Analyzer -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 tool-card">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-font fa-2x text-info me-3"></i>
+                        <h5 class="card-title mb-0">Анализатор текста</h5>
+                    </div>
+                    <p class="card-text flex-grow-1">Анализ текста: подсчет символов, слов и другая статистика</p>
+                    <a href="{% url 'tools:text_analyzer' %}" class="btn btn-info text-white mt-auto">Открыть</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Converter -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 tool-card">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-list fa-2x text-warning me-3"></i>
+                        <h5 class="card-title mb-0">Конвертер списков</h5>
+                    </div>
+                    <p class="card-text flex-grow-1">Форматирование текста: изменение регистра, добавление запятых и другое</p>
+                    <a href="{% url 'tools:list_converter' %}" class="btn btn-warning text-dark mt-auto">Открыть</a>
                 </div>
             </div>
         </div>
@@ -54,7 +83,16 @@
     }
     
     .card-body {
-        padding: 1.5rem;
+        padding: 1.25rem;
+    }
+
+    .btn-info {
+        color: white !important;
+    }
+    
+    .btn-info:hover {
+        color: white !important;
+        background-color: #0dcaf0;
     }
 </style>
 {% endblock %} 

@@ -1,65 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Главная страница</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .welcome {
-            margin-bottom: 20px;
-        }
-        .button {
-            padding: 10px 20px;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 5px;
-        }
-        .logout-btn {
-            background-color: #dc3545;
-        }
-        .decoder-btn {
-            background-color: #007bff;
-        }
-        .button:hover.logout-btn {
-            background-color: #c82333;
-        }
-        .button:hover.decoder-btn {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="welcome">
-            <h1>Добро пожаловать, {{ username }}!</h1>
-            <p>Вы успешно вошли в систему.</p>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Добро пожаловать в Developer Tools!</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Base64 Декодер</h5>
+                                    <p class="card-text">Инструмент для работы с Base64 кодировкой</p>
+                                    <a href="{% url 'base64_tools:home' %}" class="btn btn-primary">Открыть</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Генератор токенов</h5>
+                                    <p class="card-text">Создание и управление токенами</p>
+                                    <a href="{% url 'token_generator:home' %}" class="btn btn-primary">Открыть</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Анализатор текста</h5>
+                                    <p class="card-text">Анализ текста и подсчет статистики</p>
+                                    <a href="{% url 'tools:text_analyzer' %}" class="btn btn-primary">Открыть</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
         </div>
-        <div style="margin-bottom: 15px;">
-            <a href="{% url 'base64_tool' %}" class="button decoder-btn">Открыть Base64 декодер</a>
         </div>
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="button logout-btn">Выйти</button>
-        </form>
     </div>
-</body>
-</html> 
+</div>
+{% endblock %} 
