@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "tools",
     "token_generator",
     "base64_tools",
+    "rimski_number",
 ]
 
 MIDDLEWARE = [

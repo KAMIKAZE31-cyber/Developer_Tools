@@ -11,7 +11,7 @@
 
     <div class="row justify-content-center mb-4">
         <div class="col-md-6 text-center">
-            <form method="post" action="{% url 'generate-token' %}">
+            <form method="post" action="{% url 'token_generator:generate-token' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-key me-2"></i>Сгенерировать новый токен
@@ -71,45 +71,22 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-danger" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#deleteModal{{ token.id }}"
-                                        title="Удалить токен">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <form method="post" action="{% url 'token_generator:delete-token' token.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('Вы уверены, что хотите удалить этот токен?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
-
-                        <!-- Modal for delete confirmation -->
-                        <div class="modal fade" id="deleteModal{{ token.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Подтверждение удаления</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Вы уверены, что хотите удалить этот токен?</p>
-                                        <code>{{ token.token }}</code>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                        <form method="post" action="{% url 'delete-token' token.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Удалить</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-4">
-                <i class="fas fa-info-circle text-muted mb-3" style="font-size: 2rem;"></i>
-                <p class="text-muted mb-0">Токены еще не были сгенерированы</p>
+            <div class="text-center text-muted">
+                <p>У вас пока нет сгенерированных токенов</p>
             </div>
             {% endif %}
         </div>
@@ -137,24 +114,10 @@
 
 <script>
 function copyToken(token) {
-    navigator.clipboard.writeText(token).then(function() {
-        // Создаем временное уведомление
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
-        alert.style.top = '20px';
-        alert.style.right = '20px';
-        alert.style.zIndex = '1050';
-        alert.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>Токен скопирован
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        document.body.appendChild(alert);
-        
-        // Удаляем уведомление через 3 секунды
-        setTimeout(() => {
-            alert.remove();
-        }, 3000);
-    }).catch(function() {
+    navigator.clipboard.writeText(token).then(() => {
+        alert('Токен скопирован в буфер обмена');
+    }).catch(err => {
+        console.error('Ошибка при копировании: ', err);
         alert('Не удалось скопировать токен');
     });
 }

@@ -10,151 +10,78 @@
             <h2 class="text-center mb-0">Конвертер списков</h2>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="inputText" class="form-label">Введите текст:</label>
-                        <textarea id="inputText" class="form-control" rows="8" placeholder="Введите ваш текст здесь..."></textarea>
-                    </div>
-                    <div class="mt-3">
-                        <button id="undoBtn" class="btn btn-secondary" disabled>
-                            <i class="fas fa-undo"></i> Отменить
-                        </button>
-                    </div>
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="text" class="form-label">Введите текст для конвертации:</label>
+                    <textarea class="form-control mb-3" id="text" name="text" rows="5" required></textarea>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Выберите действие:</label>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary convert-btn" data-action="lowercase">
-                                <i class="fas fa-font"></i> Все буквы строчные
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="uppercase">
-                                <i class="fas fa-font"></i> Все буквы ПРОПИСНЫЕ
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="capitalize">
-                                <i class="fas fa-font"></i> Каждое Слово С Большой Буквы
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="sentence">
-                                <i class="fas fa-paragraph"></i> Каждое предложение с большой буквы
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="commas">
-                                <i class="fas fa-comma"></i> Добавить запятые после слов
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="remove-spaces">
-                                <i class="fas fa-compress-alt"></i> Убрать все пробелы
-                            </button>
-                            <button class="btn btn-primary convert-btn" data-action="trim-lines">
-                                <i class="fas fa-align-left"></i> Убрать пробелы в начале и конце строк
-                            </button>
-                        </div>
-                    </div>
+                <div class="form-group mb-3">
+                    <label for="format" class="form-label">Выберите формат списка:</label>
+                    <select class="form-select" id="format" name="format">
+                        <option value="bullet">Маркированный список (•)</option>
+                        <option value="numbered">Нумерованный список (1. 2. 3.)</option>
+                        <option value="dashed">Список с тире (-)</option>
+                    </select>
                 </div>
+                <button type="submit" class="btn btn-primary w-100">Конвертировать</button>
+            </form>
+
+            {% if result %}
+            <div class="mt-4">
+                <h4>Результат:</h4>
+                <div class="alert alert-success">
+                    <pre class="mb-0">{{ result }}</pre>
+                </div>
+                <button class="btn btn-outline-primary mt-2" onclick="copyToClipboard()">
+                    <i class="fas fa-copy me-2"></i>Копировать
+                </button>
             </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- История операций -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4 class="mb-0">История конвертаций</h4>
+        </div>
+        <div class="card-body">
+            {% with list_history=request.user.userhistory_set.all|dictsortreversed:"created_at"|slice:":10" %}
+            {% if list_history %}
+            <div class="list-group">
+                {% for history in list_history %}
+                {% if 'Конвертация списка' in history.action_type %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ history.action_type }}</h6>
+                            <small class="text-muted">{{ history.details }}</small>
+                        </div>
+                        <small class="text-muted">{{ history.created_at|date:"d.m.Y H:i:s" }}</small>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center mb-0">История конвертаций пуста</p>
+            {% endif %}
+            {% endwith %}
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const inputText = document.getElementById('inputText');
-    const undoBtn = document.getElementById('undoBtn');
-    const convertBtns = document.querySelectorAll('.convert-btn');
-    let history = [];
-
-    // Функция для сохранения действия в историю на сервере
-    async function saveActionToHistory(action, text, result) {
-        try {
-            const response = await fetch("{% url 'tools:save_list_converter_action' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: action,
-                    text: text,
-                    result: result
-                })
-            });
-            const data = await response.json();
-            if (data.status !== 'success') {
-                console.error('Error saving action:', data.message);
-            }
-        } catch (error) {
-            console.error('Error saving action:', error);
-        }
-    }
-
-    function updateUndoButton() {
-        undoBtn.disabled = history.length === 0;
-    }
-
-    function addToHistory(text) {
-        history.push(text);
-        updateUndoButton();
-    }
-
-    undoBtn.addEventListener('click', function() {
-        if (history.length > 1) {
-            history.pop(); // Удаляем текущее состояние
-            inputText.value = history[history.length - 1]; // Восстанавливаем предыдущее
-        } else if (history.length === 1) {
-            history.pop();
-            inputText.value = '';
-        }
-        updateUndoButton();
+function copyToClipboard() {
+    const resultText = document.querySelector('.alert-success pre').innerText;
+    navigator.clipboard.writeText(resultText).then(() => {
+        alert('Результат скопирован в буфер обмена');
+    }).catch(err => {
+        console.error('Ошибка при копировании: ', err);
+        alert('Не удалось скопировать результат');
     });
-
-    convertBtns.forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const action = this.dataset.action;
-            const originalText = inputText.value;
-            let result = originalText;
-
-            switch(action) {
-                case 'lowercase':
-                    result = originalText.toLowerCase();
-                    break;
-                case 'uppercase':
-                    result = originalText.toUpperCase();
-                    break;
-                case 'capitalize':
-                    result = originalText.split(' ')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                        .join(' ');
-                    break;
-                case 'sentence':
-                    result = originalText.toLowerCase()
-                        .replace(/(^\w|\.\s+\w)/g, letter => letter.toUpperCase());
-                    break;
-                case 'commas':
-                    result = originalText.split(' ')
-                        .filter(word => word.length > 0)
-                        .join(', ');
-                    break;
-                case 'remove-spaces':
-                    result = originalText.replace(/\s+/g, '');
-                    break;
-                case 'trim-lines':
-                    result = originalText.split('\n')
-                        .map(line => line.trim())
-                        .join('\n');
-                    break;
-            }
-
-            // Сохраняем действие в историю на сервере
-            await saveActionToHistory(action, originalText, result);
-
-            inputText.value = result;
-            addToHistory(result);
-        });
-    });
-
-    // Добавляем начальное состояние в историю
-    if (inputText.value) {
-        addToHistory(inputText.value);
-    }
-});
+}
 </script>
 
 <style>

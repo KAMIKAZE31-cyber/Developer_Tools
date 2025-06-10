@@ -11,4 +11,5 @@ urlpatterns = [
     path('tools/', include('tools.urls', namespace='tools')),
     path('tokens/', include('token_generator.urls', namespace='token_generator')),
     path('base64/', include('base64_tools.urls', namespace='base64_tools')),
+    path('roman/', include('rimski_number.urls', namespace='rimski_number')),
 ]

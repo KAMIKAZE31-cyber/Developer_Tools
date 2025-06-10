@@ -29,10 +29,10 @@ class GenerateTokenView(LoginRequiredMixin, View):
             details=f'Создан новый токен: {token.token[:8]}...'
         )
         
-        return redirect('token-list')
+        return redirect('token_generator:home')
 
     def get(self, request):
-        return redirect('token-list')
+        return redirect('token_generator:home')
 
 class DeleteTokenView(LoginRequiredMixin, View):
     def post(self, request, token_id):
@@ -48,4 +48,4 @@ class DeleteTokenView(LoginRequiredMixin, View):
         )
         
         messages.success(request, 'Токен успешно удален')
-        return redirect('token-list')
+        return redirect('token_generator:home')

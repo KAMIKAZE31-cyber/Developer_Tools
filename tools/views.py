@@ -11,12 +11,19 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+@login_required
 def base64_tool(request):
     result = ""
     if request.method == "POST":
         text = request.POST.get("text", "")
         try:
             result = bytes.fromhex(text).decode('utf-8')
+            # Записываем действие в историю
+            UserHistory.objects.create(
+                user=request.user,
+                action_type='Base64 декодирование',
+                details=f'Декодирование текста длиной {len(text)} символов'
+            )
         except:
             result = "Ошибка декодирования"
     return render(request, "tools/base64.html", {"result": result})
@@ -85,16 +92,61 @@ def logout_view(request):
 
 @login_required
 def clear_history(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         UserHistory.objects.filter(user=request.user).delete()
-        messages.success(request, 'История действий очищена')
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+        messages.success(request, 'История успешно очищена')
+    return redirect('tools:home')
 
+@login_required
 def text_analyzer(request):
-    return render(request, 'tools/text_analyzer.html')
+    result = None
+    if request.method == "POST":
+        text = request.POST.get("text", "")
+        if text:
+            # Анализ текста
+            word_count = len(text.split())
+            char_count = len(text)
+            line_count = len(text.splitlines())
+            
+            result = {
+                "word_count": word_count,
+                "char_count": char_count,
+                "line_count": line_count
+            }
+            
+            # Записываем действие в историю
+            UserHistory.objects.create(
+                user=request.user,
+                action_type='Анализ текста',
+                details=f'Проанализирован текст: {word_count} слов, {char_count} символов, {line_count} строк'
+            )
+    
+    return render(request, "tools/text_analyzer.html", {"result": result})
 
+@login_required
 def list_converter(request):
-    return render(request, 'tools/list_converter.html')
+    result = None
+    if request.method == "POST":
+        text = request.POST.get("text", "")
+        format_type = request.POST.get("format", "bullet")
+        
+        if text:
+            lines = text.splitlines()
+            if format_type == "bullet":
+                result = "\n".join([f"• {line}" for line in lines if line.strip()])
+            elif format_type == "numbered":
+                result = "\n".join([f"{i}. {line}" for i, line in enumerate(lines, 1) if line.strip()])
+            elif format_type == "dashed":
+                result = "\n".join([f"- {line}" for line in lines if line.strip()])
+            
+            # Записываем действие в историю
+            UserHistory.objects.create(
+                user=request.user,
+                action_type='Конвертация списка',
+                details=f'Преобразование текста в формат {format_type}, {len(lines)} строк'
+            )
+    
+    return render(request, "tools/list_converter.html", {"result": result})
 
 @csrf_exempt
 @login_required
