@@ -33,12 +33,19 @@ def register_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
+        if not username or not password:
+            return render(request, 'registration/register.html', {'error': 'Пожалуйста, заполните все поля'})
+        
         if User.objects.filter(username=username).exists():
             return render(request, 'registration/register.html', {'error': 'Пользователь с таким именем уже существует'})
         
-        user = User.objects.create_user(username=username, password=password)
-        login(request, user)
-        return redirect('tools:home')
+        try:
+            user = User.objects.create_user(username=username, password=password)
+            login(request, user)
+            messages.success(request, 'Регистрация успешна!')
+            return redirect('tools:home')
+        except Exception as e:
+            return render(request, 'registration/register.html', {'error': 'Ошибка при регистрации. Попробуйте другие данные.'})
     
     return render(request, 'registration/register.html')
 
@@ -46,10 +53,15 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        
+        if not username or not password:
+            return render(request, 'registration/login.html', {'error': 'Пожалуйста, заполните все поля'})
+        
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
+            messages.success(request, 'Вы успешно вошли в систему!')
             return redirect('tools:home')
         else:
             return render(request, 'registration/login.html', {'error': 'Неверное имя пользователя или пароль'})
@@ -82,13 +94,10 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'tools/register.html', {'form': form})
 
-@login_required
 def logout_view(request):
-    if request.method == 'POST':
-        logout(request)
-        messages.success(request, 'Вы успешно вышли из системы.')
-        return redirect('tools:home')
-    return render(request, 'tools/logout.html')
+    logout(request)
+    messages.success(request, 'Вы успешно вышли из системы.')
+    return redirect('tools:login')
 
 @login_required
 def clear_history(request):
@@ -129,8 +138,31 @@ def list_converter(request):
     if request.method == "POST":
         text = request.POST.get("text", "")
         format_type = request.POST.get("format", "bullet")
+        action = request.POST.get("action", "")
         
         if text:
+            # Применяем действия по форматированию текста
+            if action == "lowercase":
+                text = text.lower()
+            elif action == "uppercase":
+                text = text.upper()
+            elif action == "capitalize":
+                text = " ".join(word.capitalize() for word in text.split())
+            elif action == "sentence":
+                # Разбиваем на предложения и капитализируем первую букву каждого
+                sentences = text.split('. ')
+                text = '. '.join(s.capitalize() for s in sentences)
+            elif action == "commas":
+                # Добавляем запятые после каждого слова, кроме последнего
+                words = text.split()
+                text = ', '.join(words)
+            elif action == "remove-spaces":
+                text = text.replace(" ", "")
+            elif action == "trim-lines":
+                lines = text.splitlines()
+                text = "\n".join(line.strip() for line in lines)
+
+            # Применяем форматирование списка
             lines = text.splitlines()
             if format_type == "bullet":
                 result = "\n".join([f"• {line}" for line in lines if line.strip()])
@@ -140,9 +172,13 @@ def list_converter(request):
                 result = "\n".join([f"- {line}" for line in lines if line.strip()])
             
             # Записываем действие в историю
+            action_desc = "Конвертация списка"
+            if action:
+                action_desc = f"{action_desc} с {action}"
+            
             UserHistory.objects.create(
                 user=request.user,
-                action_type='Конвертация списка',
+                action_type=action_desc,
                 details=f'Преобразование текста в формат {format_type}, {len(lines)} строк'
             )
     

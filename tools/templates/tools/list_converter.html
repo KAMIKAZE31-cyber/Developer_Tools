@@ -16,6 +16,34 @@
                     <label for="text" class="form-label">Введите текст для конвертации:</label>
                     <textarea class="form-control mb-3" id="text" name="text" rows="5" required></textarea>
                 </div>
+                
+                <!-- Кнопки форматирования текста -->
+                <div class="btn-group mb-3 w-100" role="group">
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="lowercase">
+                        <i class="fas fa-font"></i> В нижний регистр
+                    </button>
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="uppercase">
+                        <i class="fas fa-font"></i> В верхний регистр
+                    </button>
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="capitalize">
+                        <i class="fas fa-font"></i> Каждое слово с большой буквы
+                    </button>
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="sentence">
+                        <i class="fas fa-paragraph"></i> Предложения с большой буквы
+                    </button>
+                </div>
+                <div class="btn-group mb-3 w-100" role="group">
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="commas">
+                        <i class="fas fa-comma"></i> Добавить запятые
+                    </button>
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="remove-spaces">
+                        <i class="fas fa-compress-alt"></i> Убрать пробелы
+                    </button>
+                    <button type="submit" class="btn btn-outline-secondary" name="action" value="trim-lines">
+                        <i class="fas fa-align-left"></i> Убрать пробелы по краям
+                    </button>
+                </div>
+                
                 <div class="form-group mb-3">
                     <label for="format" class="form-label">Выберите формат списка:</label>
                     <select class="form-select" id="format" name="format">
@@ -100,6 +128,29 @@ function copyToClipboard() {
 
 .card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.btn-group .btn {
+    flex: 1;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
 }
 </style>
 {% endblock %} 
