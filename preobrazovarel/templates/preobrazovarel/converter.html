@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Конвертер JSON ⟷ TOML{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Конвертер JSON ⟷ TOML</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Выберите формат входных данных:</label>
+                            <select name="input_format" class="form-select" id="input_format">
+                                <option value="json" {% if input_format == 'json' %}selected{% endif %}>JSON</option>
+                                <option value="toml" {% if input_format == 'toml' %}selected{% endif %}>TOML</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="input_text" class="form-label">Введите текст для конвертации:</label>
+                            <textarea class="form-control" id="input_text" name="input_text" rows="6">{{ input_text }}</textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Конвертировать</button>
+                        </div>
+                    </form>
+
+                    {% if error %}
+                    <div class="alert alert-danger mt-3" role="alert">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    {% if result %}
+                    <div class="mt-4">
+                        <h4>Результат:</h4>
+                        <pre class="bg-light p-3 rounded"><code>{{ result }}</code></pre>
+                        <button class="btn btn-secondary" onclick="copyToClipboard()">Копировать результат</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const resultText = document.querySelector('pre code').textContent;
+    navigator.clipboard.writeText(resultText).then(() => {
+        alert('Результат скопирован в буфер обмена!');
+    }).catch(err => {
+        console.error('Ошибка при копировании:', err);
+    });
+}
+
+// Динамическое обновление подсказки в зависимости от выбранного формата
+document.getElementById('input_format').addEventListener('change', function() {
+    const label = document.querySelector('label[for="input_text"]');
+    if (this.value === 'json') {
+        label.textContent = 'Введите JSON для конвертации в TOML:';
+    } else {
+        label.textContent = 'Введите TOML для конвертации в JSON:';
+    }
+});
+</script>
+
+<style>
+.btn-primary {
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+pre {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+pre code {
+    display: block;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.alert-success {
+    background-color: #f8f9fa;
+    border-color: #28a745;
+}
+
+.alert-success pre {
+    color: #155724;
+}
+</style>
+{% endblock %} 

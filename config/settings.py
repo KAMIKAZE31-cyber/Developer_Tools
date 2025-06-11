@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "token_generator",
     "base64_tools",
     "rimski_number",
+    "preobrazovarel",
 ]
 
 MIDDLEWARE = [
