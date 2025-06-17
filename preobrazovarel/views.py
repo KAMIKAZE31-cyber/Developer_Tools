@@ -4,6 +4,15 @@ from django.contrib import messages
 from tools.models import UserHistory
 import json
 import toml
+import sys
+import os
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from history_manager import HistoryManager
+
+# Создаем экземпляр HistoryManager
+history = HistoryManager('preobrazovarel_history.json')
 
 # Create your views here.
 
@@ -33,12 +42,32 @@ def json_to_toml_converter(request):
                 action_type=action_type,
                 details=f'Преобразован текст длиной {len(input_text)} символов'
             )
+            
+            # Добавляем запись в JSON историю
+            history.add_entry(action_type, {
+                "user": request.user.username,
+                "input_length": len(input_text),
+                "input_format": input_format
+            })
+            
         except json.JSONDecodeError:
             error = "Ошибка: Неверный формат JSON"
+            history.add_entry("Ошибка конвертации", {
+                "error": "Неверный формат JSON",
+                "user": request.user.username
+            })
         except toml.TomlDecodeError:
             error = "Ошибка: Неверный формат TOML"
+            history.add_entry("Ошибка конвертации", {
+                "error": "Неверный формат TOML",
+                "user": request.user.username
+            })
         except Exception as e:
             error = f"Ошибка при конвертации: {str(e)}"
+            history.add_entry("Ошибка конвертации", {
+                "error": str(e),
+                "user": request.user.username
+            })
     
     return render(request, "preobrazovarel/converter.html", {
         "result": result,

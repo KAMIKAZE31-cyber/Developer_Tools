@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">HEX Color Picker</h2>
+                    
+                    <!-- Color Wheel Container -->
+                    <div class="text-center mb-4">
+                        <div id="colorWheel" class="mx-auto"></div>
+                    </div>
+
+                    <!-- Color Preview -->
+                    <div class="color-preview mb-4" id="colorPreview" style="width: 100%; height: 100px; border: 2px solid #ddd; border-radius: 8px;"></div>
+                    
+                    <!-- Color Input Group -->
+                    <div class="input-group">
+                        <input type="text" id="hexInput" class="form-control" placeholder="#000000" maxlength="7">
+                        <button onclick="updateColorFromInput()" class="btn btn-primary">Применить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем библиотеку iro.js -->
+<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+
+<script>
+    // Создаем color picker
+    var colorPicker = new iro.ColorPicker("#colorWheel", {
+        width: 250,
+        color: "#000000",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        layout: [
+            {
+                component: iro.ui.Wheel,
+                options: {}
+            },
+            {
+                component: iro.ui.Slider,
+                options: {
+                    sliderType: 'value'
+                }
+            }
+        ]
+    });
+
+    // Обновляем цвет при изменении в color picker
+    colorPicker.on('color:change', function(color) {
+        document.getElementById('colorPreview').style.backgroundColor = color.hexString;
+        document.getElementById('hexInput').value = color.hexString;
+    });
+
+    // Обновляем цвет при вводе HEX-кода вручную
+    function updateColorFromInput() {
+        let hexInput = document.getElementById('hexInput');
+        let color = hexInput.value;
+        
+        // Add # if it's missing
+        if (!color.startsWith('#')) {
+            color = '#' + color;
+        }
+        
+        // Validate hex color format
+        if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            colorPicker.color.hexString = color;
+            document.getElementById('colorPreview').style.backgroundColor = color;
+            hexInput.value = color;
+        } else {
+            alert('Пожалуйста, введите корректный HEX-код цвета (например, #FF0000)');
+        }
+    }
+
+    // Initialize with black color
+    document.getElementById('hexInput').value = '#000000';
+    document.getElementById('colorPreview').style.backgroundColor = '#000000';
+</script>
+
+<style>
+    #colorWheel {
+        margin: 0 auto;
+        margin-bottom: 20px;
+    }
+    
+    .color-preview {
+        transition: background-color 0.3s ease;
+    }
+    
+    .input-group {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %} 

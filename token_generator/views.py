@@ -5,6 +5,15 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Token
 from tools.models import UserHistory
+import sys
+import os
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from history_manager import HistoryManager
+
+# Создаем экземпляр HistoryManager
+history = HistoryManager('token_generator_history.json')
 
 # Create your views here.
 
@@ -29,6 +38,13 @@ class GenerateTokenView(LoginRequiredMixin, View):
             details=f'Создан новый токен: {token.token[:8]}...'
         )
         
+        # Добавляем запись в JSON историю
+        history.add_entry("Генерация токена", {
+            "user": request.user.username,
+            "token_preview": token.token[:8],
+            "created_at": token.created_at.isoformat()
+        })
+        
         return redirect('token_generator:home')
 
     def get(self, request):
@@ -46,6 +62,13 @@ class DeleteTokenView(LoginRequiredMixin, View):
             action_type='Удаление токена',
             details=f'Удален токен: {token_preview}...'
         )
+        
+        # Добавляем запись в JSON историю
+        history.add_entry("Удаление токена", {
+            "user": request.user.username,
+            "token_preview": token_preview,
+            "deleted_at": token.created_at.isoformat()
+        })
         
         messages.success(request, 'Токен успешно удален')
         return redirect('token_generator:home')

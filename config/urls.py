@@ -13,4 +13,5 @@ urlpatterns = [
     path('base64/', include('base64_tools.urls', namespace='base64_tools')),
     path('roman/', include('rimski_number.urls', namespace='rimski_number')),
     path('json-toml/', include('preobrazovarel.urls', namespace='preobrazovarel')),
+    path('colors/', include('color_HTML.urls', namespace='color_HTML')),
 ]

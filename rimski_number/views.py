@@ -2,6 +2,15 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from tools.models import UserHistory
 from django.contrib.auth.decorators import login_required
+import sys
+import os
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from history_manager import HistoryManager
+
+# Создаем экземпляр HistoryManager
+history = HistoryManager('rimski_number_history.json')
 
 def to_roman(number):
     if not 0 < number < 4000:
@@ -48,8 +57,27 @@ def convert_number(request):
                 details=f'Число {number} преобразовано в {result}'
             )
             
+            # Добавляем запись в JSON историю
+            history.add_entry("Конвертация в римские цифры", {
+                "user": request.user.username,
+                "input_number": number,
+                "result": result
+            })
+            
             return JsonResponse({'success': True, 'result': result})
         else:
-            return JsonResponse({'success': False, 'error': 'Пожалуйста, введите число от 1 до 3999'})
+            error_msg = 'Пожалуйста, введите число от 1 до 3999'
+            history.add_entry("Ошибка конвертации", {
+                "user": request.user.username,
+                "error": error_msg,
+                "input_number": number
+            })
+            return JsonResponse({'success': False, 'error': error_msg})
     except ValueError:
-        return JsonResponse({'success': False, 'error': 'Пожалуйста, введите корректное число'})
+        error_msg = 'Пожалуйста, введите корректное число'
+        history.add_entry("Ошибка конвертации", {
+            "user": request.user.username,
+            "error": error_msg,
+            "input": request.POST.get('number', '')
+        })
+        return JsonResponse({'success': False, 'error': error_msg})

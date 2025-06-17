@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "base64_tools",
     "rimski_number",
     "preobrazovarel",
+    "color_HTML",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +63,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "tools" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

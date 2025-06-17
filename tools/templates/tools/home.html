@@ -94,6 +94,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- HEX Color Picker -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 tool-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-palette fa-2x text-purple me-3"></i>
+                        <h5 class="card-title mb-0">HEX Color Picker</h5>
+                    </div>
+                    <p class="card-text">Выбор и предпросмотр цветов в HEX формате</p>
+                    <a href="{% url 'color_HTML:hex_color' %}" class="btn btn-purple">Открыть</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -111,6 +125,20 @@
     
     .card-body {
         padding: 1.5rem;
+    }
+
+    .btn-purple {
+        background-color: #6f42c1;
+        color: white;
+    }
+
+    .btn-purple:hover {
+        background-color: #5a32a3;
+        color: white;
+    }
+
+    .text-purple {
+        color: #6f42c1;
     }
 </style>
 {% endblock %} 
