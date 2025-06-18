@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "timestamp": "2025-06-18T17:42:31.732009",
+    "action": "encode",
+    "text": "при",
+    "result": "0L/RgNC4",
+    "operation": "Кодирование",
+    "input_type": "Текст",
+    "output_type": "Base64"
+  }
+]
