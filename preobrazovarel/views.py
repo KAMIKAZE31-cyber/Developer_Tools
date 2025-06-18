@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from tools.models import UserHistory
 import json
 import toml
 import sys
@@ -36,37 +35,34 @@ def json_to_toml_converter(request):
                 result = json.dumps(toml_data, indent=2, ensure_ascii=False)
                 action_type = 'Конвертация TOML в JSON'
             
-            # Записываем действие в историю
-            UserHistory.objects.create(
-                user=request.user,
-                action_type=action_type,
-                details=f'Преобразован текст длиной {len(input_text)} символов'
-            )
-            
             # Добавляем запись в JSON историю
             history.add_entry(action_type, {
                 "user": request.user.username,
                 "input_length": len(input_text),
-                "input_format": input_format
+                "input_format": input_format,
+                "tool_url": '/preobrazovarel/'
             })
             
         except json.JSONDecodeError:
             error = "Ошибка: Неверный формат JSON"
             history.add_entry("Ошибка конвертации", {
                 "error": "Неверный формат JSON",
-                "user": request.user.username
+                "user": request.user.username,
+                "tool_url": '/preobrazovarel/'
             })
         except toml.TomlDecodeError:
             error = "Ошибка: Неверный формат TOML"
             history.add_entry("Ошибка конвертации", {
                 "error": "Неверный формат TOML",
-                "user": request.user.username
+                "user": request.user.username,
+                "tool_url": '/preobrazovarel/'
             })
         except Exception as e:
             error = f"Ошибка при конвертации: {str(e)}"
             history.add_entry("Ошибка конвертации", {
                 "error": str(e),
-                "user": request.user.username
+                "user": request.user.username,
+                "tool_url": '/preobrazovarel/'
             })
     
     return render(request, "preobrazovarel/converter.html", {

@@ -6,10 +6,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserHistory
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import sys
+import os
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from history_manager import HistoryManager
+
+# Создаем экземпляр HistoryManager
+history = HistoryManager('tools_history.json')
 
 @login_required
 def base64_tool(request):
@@ -19,11 +27,11 @@ def base64_tool(request):
         try:
             result = bytes.fromhex(text).decode('utf-8')
             # Записываем действие в историю
-            UserHistory.objects.create(
-                user=request.user,
-                action_type='Base64 декодирование',
-                details=f'Декодирование текста длиной {len(text)} символов'
-            )
+            history.add_entry("Base64 декодирование", {
+                "user": request.user.username,
+                "input_length": len(text),
+                "tool_url": '/tools/'
+            })
         except:
             result = "Ошибка декодирования"
     return render(request, "tools/base64.html", {"result": result})
@@ -102,7 +110,21 @@ def logout_view(request):
 @login_required
 def clear_history(request):
     if request.method == "POST":
-        UserHistory.objects.filter(user=request.user).delete()
+        # Список всех файлов истории
+        history_files = [
+            'tools_history.json',
+            'base64_tools_history.json',
+            'color_HTML_history.json',
+            'token_generator_history.json',
+            'rimski_number_history.json',
+            'preobrazovarel_history.json'
+        ]
+        
+        # Очищаем каждый файл истории
+        for file_name in history_files:
+            history_manager = HistoryManager(file_name)
+            history_manager.clear_history()
+        
         messages.success(request, 'История успешно очищена')
     return redirect('tools:home')
 
@@ -124,11 +146,13 @@ def text_analyzer(request):
             }
             
             # Записываем действие в историю
-            UserHistory.objects.create(
-                user=request.user,
-                action_type='Анализ текста',
-                details=f'Проанализирован текст: {word_count} слов, {char_count} символов, {line_count} строк'
-            )
+            history.add_entry("Анализ текста", {
+                "user": request.user.username,
+                "word_count": word_count,
+                "char_count": char_count,
+                "line_count": line_count,
+                "tool_url": '/tools/'
+            })
     
     return render(request, "tools/text_analyzer.html", {"result": result})
 
@@ -136,51 +160,32 @@ def text_analyzer(request):
 def list_converter(request):
     result = None
     if request.method == "POST":
-        text = request.POST.get("text", "")
-        format_type = request.POST.get("format", "bullet")
-        action = request.POST.get("action", "")
+        text = request.POST.get('text', '')
+        action = request.POST.get('action', '')
+        format_type = request.POST.get('format', 'bullet')
         
         if text:
-            # Применяем действия по форматированию текста
-            if action == "lowercase":
-                text = text.lower()
-            elif action == "uppercase":
-                text = text.upper()
-            elif action == "capitalize":
-                text = " ".join(word.capitalize() for word in text.split())
-            elif action == "sentence":
-                # Разбиваем на предложения и капитализируем первую букву каждого
-                sentences = text.split('. ')
-                text = '. '.join(s.capitalize() for s in sentences)
-            elif action == "commas":
-                # Добавляем запятые после каждого слова, кроме последнего
-                words = text.split()
-                text = ', '.join(words)
-            elif action == "remove-spaces":
-                text = text.replace(" ", "")
-            elif action == "trim-lines":
-                lines = text.splitlines()
-                text = "\n".join(line.strip() for line in lines)
-
-            # Применяем форматирование списка
-            lines = text.splitlines()
-            if format_type == "bullet":
-                result = "\n".join([f"• {line}" for line in lines if line.strip()])
-            elif format_type == "numbered":
-                result = "\n".join([f"{i}. {line}" for i, line in enumerate(lines, 1) if line.strip()])
-            elif format_type == "dashed":
-                result = "\n".join([f"- {line}" for line in lines if line.strip()])
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
             
-            # Записываем действие в историю
-            action_desc = "Конвертация списка"
+            if format_type == 'bullet':
+                result = '\n'.join(f'• {line}' for line in lines)
+                action_desc = 'Маркированный список'
+            elif format_type == 'numbered':
+                result = '\n'.join(f'{i+1}. {line}' for line in lines)
+                action_desc = 'Нумерованный список'
+            elif format_type == 'dashed':
+                result = '\n'.join(f'- {line}' for line in lines)
+                action_desc = 'Список с тире'
+            
             if action:
                 action_desc = f"{action_desc} с {action}"
             
-            UserHistory.objects.create(
-                user=request.user,
-                action_type=action_desc,
-                details=f'Преобразование текста в формат {format_type}, {len(lines)} строк'
-            )
+            history.add_entry(action_desc, {
+                "user": request.user.username,
+                "format_type": format_type,
+                "lines_count": len(lines),
+                "tool_url": '/tools/'
+            })
     
     return render(request, "tools/list_converter.html", {"result": result})
 
@@ -207,12 +212,12 @@ def save_list_converter_action(request):
             description = f"{action_descriptions.get(action, 'Неизвестное действие')}"
             
             # Сохраняем действие в историю
-            UserHistory.objects.create(
-                user=request.user,
-                action=description,
-                input_data=text[:100] if text else '',  # Сохраняем только первые 100 символов
-                output_data=result[:100] if result else ''  # Сохраняем только первые 100 символов
-            )
+            history.add_entry(description, {
+                "user": request.user.username,
+                "input_preview": text[:100] if text else '',
+                "output_preview": result[:100] if result else '',
+                "tool_url": '/tools/'
+            })
             
             return JsonResponse({'status': 'success'})
         except Exception as e:

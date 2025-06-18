@@ -20,8 +20,23 @@
                     <!-- Color Input Group -->
                     <div class="input-group">
                         <input type="text" id="hexInput" class="form-control" placeholder="#000000" maxlength="7">
-                        <button onclick="updateColorFromInput()" class="btn btn-primary">Применить</button>
+                        <button onclick="copyHexColor()" class="btn btn-primary">Копировать</button>
                     </div>
+
+                    <!-- История цветов -->
+                    {% if color_history %}
+                    <div class="mt-4">
+                        <h5 class="text-center mb-3">История цветов</h5>
+                        <div class="color-history">
+                            {% for entry in color_history %}
+                            <div class="color-history-item" onclick="selectColorFromHistory('{{ entry.details.color }}')" 
+                                 style="background-color: {{ entry.details.color }};"
+                                 title="{{ entry.details.color }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -56,10 +71,38 @@
     colorPicker.on('color:change', function(color) {
         document.getElementById('colorPreview').style.backgroundColor = color.hexString;
         document.getElementById('hexInput').value = color.hexString;
+        // Отправляем цвет на сервер
+        saveColorToHistory(color.hexString);
     });
 
-    // Обновляем цвет при вводе HEX-кода вручную
-    function updateColorFromInput() {
+    // Функция сохранения цвета в историю
+    function saveColorToHistory(color) {
+        fetch('/color_HTML/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: 'color=' + encodeURIComponent(color)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('Цвет сохранен в истории');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+
+    // Функция выбора цвета из истории
+    function selectColorFromHistory(color) {
+        colorPicker.color.hexString = color;
+        document.getElementById('colorPreview').style.backgroundColor = color;
+        document.getElementById('hexInput').value = color;
+    }
+
+    // Функция копирования HEX-кода
+    function copyHexColor() {
         let hexInput = document.getElementById('hexInput');
         let color = hexInput.value;
         
@@ -70,12 +113,31 @@
         
         // Validate hex color format
         if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
-            colorPicker.color.hexString = color;
-            document.getElementById('colorPreview').style.backgroundColor = color;
-            hexInput.value = color;
+            navigator.clipboard.writeText(color).then(() => {
+                alert('HEX-код цвета скопирован: ' + color);
+            }).catch(err => {
+                console.error('Ошибка при копировании:', err);
+                alert('Не удалось скопировать HEX-код');
+            });
         } else {
             alert('Пожалуйста, введите корректный HEX-код цвета (например, #FF0000)');
         }
+    }
+
+    // Функция получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
     // Initialize with black color
@@ -96,6 +158,27 @@
     .input-group {
         max-width: 300px;
         margin: 0 auto;
+    }
+
+    .color-history {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .color-history-item {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s;
+        border: 2px solid #ddd;
+    }
+
+    .color-history-item:hover {
+        transform: scale(1.1);
     }
 </style>
 {% endblock %} 

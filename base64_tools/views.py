@@ -14,6 +14,7 @@ from history_manager import HistoryManager
 
 # Создаем экземпляр HistoryManager
 history = HistoryManager('base64_tools_history.json')
+logger.info("Initialized HistoryManager for base64_tools")
 
 @login_required
 def base64_tool(request):
@@ -31,22 +32,32 @@ def base64_tool(request):
             logger.debug("Attempting to encode text")
             encoded = base64_encode(input_text)
             logger.debug(f"Encoded result: {encoded}")
-            # Добавляем запись в историю
-            history.add_entry("Base64 кодирование", {
-                "user": request.user.username,
-                "input_length": len(input_text),
-                "output_length": len(encoded)
-            })
+            # Добавляем запись в JSON историю
+            try:
+                history.add_entry("Base64 кодирование", {
+                    "user": request.user.username,
+                    "input_length": len(input_text),
+                    "output_length": len(encoded),
+                    "tool_url": '/base64_tools/'
+                })
+                logger.info("Successfully added history entry for encoding")
+            except Exception as e:
+                logger.error(f"Failed to add history entry: {e}")
         elif action == 'decode':
             logger.debug("Attempting to decode text")
             decoded = base64_decode(input_text)
             logger.debug(f"Decoded result: {decoded}")
-            # Добавляем запись в историю
-            history.add_entry("Base64 декодирование", {
-                "user": request.user.username,
-                "input_length": len(input_text),
-                "output_length": len(decoded)
-            })
+            # Добавляем запись в JSON историю
+            try:
+                history.add_entry("Base64 декодирование", {
+                    "user": request.user.username,
+                    "input_length": len(input_text),
+                    "output_length": len(decoded),
+                    "tool_url": '/base64_tools/'
+                })
+                logger.info("Successfully added history entry for decoding")
+            except Exception as e:
+                logger.error(f"Failed to add history entry: {e}")
 
     return render(
         request,

@@ -12,7 +12,7 @@
             top: 0;
             left: 0;
             height: 100vh;
-            width: 250px;
+            width: 300px;
             background-color: #f8f9fa;
             padding: 20px;
             border-right: 1px solid #dee2e6;
@@ -21,7 +21,7 @@
         }
 
         .main-content {
-            margin-left: 250px;
+            margin-left: 300px;
             padding: 20px;
         }
 
@@ -32,33 +32,74 @@
         }
 
         .history-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
             background-color: white;
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .history-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .history-timestamp {
             font-size: 0.8em;
             color: #6c757d;
+            margin-top: 8px;
         }
 
         .history-action {
             font-weight: 500;
             color: #0d6efd;
+            margin-bottom: 8px;
+        }
+
+        .history-details {
+            font-size: 0.9em;
+            color: #495057;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .history-tool {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            background-color: #e9ecef;
+            color: #495057;
+            margin-right: 8px;
+        }
+
+        .history-tool i {
+            margin-right: 4px;
+        }
+
+        .history-link {
+            color: #0d6efd;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .history-link:hover {
+            color: #0a58ca;
+            text-decoration: underline;
+        }
+
+        .history-link i {
+            margin-right: 6px;
         }
 
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
+                width: 280px;
             }
 
             .sidebar.show {
@@ -80,6 +121,18 @@
 
         .toggle-sidebar {
             display: none;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .history-empty i {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
         }
     </style>
 </head>
@@ -104,19 +157,41 @@
             {% if request.user.is_authenticated %}
                 {% for action in user_history %}
                 <div class="history-item">
-                    <div class="history-action">{{ action.action_type }}</div>
-                    <div class="history-details">{{ action.details }}</div>
-                    <div class="history-timestamp">{{ action.timestamp|date:"d.m.Y H:i" }}</div>
+                    <div class="history-action">
+                        {% if action.details.tool_url %}
+                            <a href="{{ action.details.tool_url }}" class="history-link">
+                                <i class="fas fa-external-link-alt"></i>
+                                {{ action.action }}
+                            </a>
+                        {% else %}
+                            {{ action.action }}
+                        {% endif %}
+                    </div>
+                    <div class="history-details">
+                        {% if action.details %}
+                            {% for key, value in action.details.items %}
+                                {% if key != 'tool_url' and key != 'user' %}
+                                    <div class="mb-1">
+                                        <strong>{{ key|title }}:</strong> {{ value }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="history-timestamp">
+                        <i class="far fa-clock"></i>
+                        {{ action.timestamp|date:"d.m.Y H:i" }}
+                    </div>
                 </div>
                 {% empty %}
-                <div class="text-muted text-center">
-                    <i class="fas fa-history mb-2"></i>
+                <div class="history-empty">
+                    <i class="fas fa-history"></i>
                     <p>История пуста</p>
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="text-muted text-center">
-                    <i class="fas fa-lock mb-2"></i>
+                <div class="history-empty">
+                    <i class="fas fa-lock"></i>
                     <p>Войдите, чтобы видеть историю</p>
                 </div>
             {% endif %}

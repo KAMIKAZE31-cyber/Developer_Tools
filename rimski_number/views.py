@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from tools.models import UserHistory
 from django.contrib.auth.decorators import login_required
 import sys
 import os
@@ -50,18 +49,12 @@ def convert_number(request):
         if 0 < number < 4000:
             result = to_roman(number)
             
-            # Записываем действие в историю
-            UserHistory.objects.create(
-                user=request.user,
-                action_type='Конвертация в римские цифры',
-                details=f'Число {number} преобразовано в {result}'
-            )
-            
             # Добавляем запись в JSON историю
             history.add_entry("Конвертация в римские цифры", {
                 "user": request.user.username,
                 "input_number": number,
-                "result": result
+                "result": result,
+                "tool_url": '/rimski_number/'
             })
             
             return JsonResponse({'success': True, 'result': result})
@@ -70,7 +63,8 @@ def convert_number(request):
             history.add_entry("Ошибка конвертации", {
                 "user": request.user.username,
                 "error": error_msg,
-                "input_number": number
+                "input_number": number,
+                "tool_url": '/rimski_number/'
             })
             return JsonResponse({'success': False, 'error': error_msg})
     except ValueError:
@@ -78,6 +72,7 @@ def convert_number(request):
         history.add_entry("Ошибка конвертации", {
             "user": request.user.username,
             "error": error_msg,
-            "input": request.POST.get('number', '')
+            "input": request.POST.get('number', ''),
+            "tool_url": '/rimski_number/'
         })
         return JsonResponse({'success': False, 'error': error_msg})
