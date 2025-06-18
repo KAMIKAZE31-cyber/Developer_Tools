@@ -1,69 +1,273 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container text-center position-relative">
-    <a href="{% url 'tools:home' %}" class="btn btn-outline-primary back-btn">← На главную</a>
-    
-    <h1 class="mb-4">Base64 Кодировщик / Декодировщик</h1>
+{% block title %}Base64 Кодирование/Декодирование{% endblock %}
 
-    <form method="post" class="text-start">
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Base64 Кодирование/Декодирование</h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form id="base64Form" method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <textarea name="text"
-                      id="input-text"
-                      class="form-control"
-                      rows="6"
-                      placeholder="Введите текст или Base64 строку">{{ input_text }}</textarea>
+                            <label for="text" class="form-label">Введите текст:</label>
+                            <textarea class="form-control" id="text" name="text" rows="4" required></textarea>
         </div>
-
-        <div class="d-grid d-md-block">
-            <button type="submit" name="action" value="encode" class="btn btn-primary btn-custom">Кодировать</button>
-            <button type="submit" name="action" value="decode" class="btn btn-outline-secondary btn-custom">Декодировать</button>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-primary" onclick="submitForm('encode')">Закодировать</button>
+                            <button type="button" class="btn btn-secondary" onclick="submitForm('decode')">Декодировать</button>
         </div>
+                        <input type="hidden" name="action" id="action" value="">
     </form>
 
-    <!-- Результат -->
-    <div class="result-box mt-4">
-        <h5 class="mb-3">Результат:</h5>
-        {% if encoded %}
-            <div class="alert alert-success d-flex justify-content-between align-items-center"
-                 role="alert"
-                 id="encoded-result">
-                <pre class="mb-0 flex-grow-1">{{ encoded }}</pre>
-                <button class="btn btn-sm btn-outline-light copy-btn"
-                        onclick="copyText('encoded-result')">📋</button>
+                    <div id="result" class="mt-4" style="display: none;">
+                        <h4>Результат:</h4>
+                        <div class="alert alert-info">
+                            <pre id="resultText" class="mb-0"></pre>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Копировать
+                        </button>
+                    </div>
+                </div>
             </div>
-        {% endif %}
 
-        {% if decoded and decoded != "Ошибка декодирования" %}
-            <div class="alert alert-info d-flex justify-content-between align-items-center"
-                 role="alert"
-                 id="decoded-result">
-                <pre class="mb-0 flex-grow-1">{{ decoded }}</pre>
-                <button class="btn btn-sm btn-outline-light copy-btn"
-                        onclick="copyText('decoded-result')">📋</button>
+            {% if history %}
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">История операций</h4>
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearHistory()">
+                        <i class="fas fa-trash"></i> Очистить историю
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Время</th>
+                                    <th>Операция</th>
+                                    <th>Тип ввода</th>
+                                    <th>Тип вывода</th>
+                                    <th>Исходный текст</th>
+                                    <th>Результат</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in history|dictsortreversed:"timestamp" %}
+                                <tr id="entry-{{ entry.timestamp }}">
+                                    <td>{{ entry.timestamp|date:"d.m.Y H:i:s" }}</td>
+                                    <td>{{ entry.operation|default:entry.action|title }}</td>
+                                    <td>{{ entry.input_type|default:"-" }}</td>
+                                    <td>{{ entry.output_type|default:"-" }}</td>
+                                    <td><code>{{ entry.text|truncatechars:30 }}</code></td>
+                                    <td><code>{{ entry.result|truncatechars:30 }}</code></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyHistoryResult('{{ entry.result }}')">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteHistoryEntry('{{ entry.timestamp }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
             </div>
-        {% elif decoded == "Ошибка декодирования" %}
-            <div class="alert alert-danger" role="alert">
-                ❌ {{ decoded }}
             </div>
         {% endif %}
+        </div>
     </div>
 </div>
 
-<!-- JavaScript для копирования -->
 <script>
-    function copyText(elementId) {
-        const el = document.getElementById(elementId);
-        const text = el.querySelector("pre").innerText.trim();
-
-        navigator.clipboard.writeText(text).then(function () {
-            alert('✅ Скопировано: ' + text.substring(0, 30) + (text.length > 30 ? '...' : ''));
-        }, function (err) {
-            alert('❌ Не удалось скопировать');
-            console.error(err);
-        });
+// Функция для восстановления результата после перезагрузки
+function restoreResult() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const result = urlParams.get('result');
+    if (result) {
+        const resultDiv = document.getElementById('result');
+        const resultText = document.getElementById('resultText');
+        resultText.textContent = result;
+        resultDiv.style.display = 'block';
     }
+}
+
+// Вызываем функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', restoreResult);
+
+function submitForm(action) {
+    const form = document.getElementById('base64Form');
+    const actionInput = document.getElementById('action');
+    actionInput.value = action;
+    
+    const formData = new FormData(form);
+    
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        
+        const resultDiv = document.getElementById('result');
+        const resultText = document.getElementById('resultText');
+        
+        resultText.textContent = data.result;
+        resultDiv.style.display = 'block';
+        
+        // Перезагружаем страницу с сохранением результата
+        const url = new URL(window.location.href);
+        url.searchParams.set('result', data.result);
+        window.location.href = url.toString();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при обработке запроса');
+    });
+}
+
+function copyToClipboard() {
+    const resultText = document.getElementById('resultText');
+    const text = resultText.textContent;
+    
+    // Отправляем запрос на сервер для записи в историю
+    const formData = new FormData();
+    formData.append('action', 'copy');
+    formData.append('text', text);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Текст скопирован в буфер обмена');
+                // Перезагружаем страницу для обновления истории
+                window.location.reload();
+            }).catch(err => {
+                console.error('Ошибка при копировании:', err);
+                alert('Не удалось скопировать текст');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при обработке запроса');
+    });
+}
+
+function copyHistoryResult(result) {
+    // Отправляем запрос на сервер для записи в историю
+    const formData = new FormData();
+    formData.append('action', 'copy');
+    formData.append('text', result);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            navigator.clipboard.writeText(result).then(() => {
+                alert('Текст скопирован в буфер обмена');
+                // Перезагружаем страницу для обновления истории
+                window.location.reload();
+            }).catch(err => {
+                console.error('Ошибка при копировании:', err);
+                alert('Не удалось скопировать текст');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при обработке запроса');
+    });
+}
+
+function deleteHistoryEntry(timestamp) {
+    if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
+        return;
+    }
+    
+    fetch(`?timestamp=${timestamp}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Удаляем строку из таблицы
+            const row = document.getElementById(`entry-${timestamp}`);
+            if (row) {
+                row.remove();
+            }
+            // Если это была последняя запись, перезагружаем страницу
+            if (document.querySelectorAll('tbody tr').length === 0) {
+                window.location.reload();
+            }
+        } else {
+            alert(data.error || 'Не удалось удалить запись');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при удалении записи');
+    });
+}
+
+function clearHistory() {
+    if (!confirm('Вы уверены, что хотите очистить всю историю?')) {
+        return;
+    }
+    
+    fetch('?clear=true', {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Не удалось очистить историю');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при очистке истории');
+    });
+}
 </script>
 
 <style>

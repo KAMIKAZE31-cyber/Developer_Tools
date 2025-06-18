@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 import logging
 
 # Настройка логирования
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class HistoryManager:
@@ -29,11 +30,14 @@ class HistoryManager:
     def add_entry(self, action: str, details: Dict[str, Any] = None) -> None:
         """Добавляет новую запись в историю"""
         try:
+            logger.debug(f"Attempting to add entry: {action} with details: {details}")
+            
             # Читаем текущую историю
             if os.path.exists(self.history_file):
                 with open(self.history_file, 'r', encoding='utf-8') as f:
                     try:
                         history = json.load(f)
+                        logger.debug(f"Current history length: {len(history)}")
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON in {self.history_file}, creating new history")
                         history = []
@@ -49,13 +53,14 @@ class HistoryManager:
             
             # Добавляем запись
             history.append(entry)
-            logger.info(f"Adding entry to {self.history_file}: {entry}")
+            logger.debug(f"Added new entry. New history length: {len(history)}")
 
             # Записываем обновленную историю
             with open(self.history_file, 'w', encoding='utf-8') as f:
                 json.dump(history, f, ensure_ascii=False, indent=2)
+            logger.info(f"Successfully wrote to {self.history_file}")
         except Exception as e:
-            logger.error(f"Error adding entry to history: {e}")
+            logger.error(f"Error adding entry to history: {e}", exc_info=True)
 
     def get_history(self, limit: int = None) -> List[Dict[str, Any]]:
         """Получает историю действий"""
@@ -64,6 +69,7 @@ class HistoryManager:
                 with open(self.history_file, 'r', encoding='utf-8') as f:
                     try:
                         history = json.load(f)
+                        logger.debug(f"Read history with {len(history)} entries")
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON in {self.history_file}")
                         history = []
@@ -74,7 +80,7 @@ class HistoryManager:
                 return history[-limit:]
             return history
         except Exception as e:
-            logger.error(f"Error reading history: {e}")
+            logger.error(f"Error reading history: {e}", exc_info=True)
             return []
 
     def clear_history(self) -> None:
@@ -84,7 +90,7 @@ class HistoryManager:
                 json.dump([], f, ensure_ascii=False, indent=2)
             logger.info(f"Cleared history in {self.history_file}")
         except Exception as e:
-            logger.error(f"Error clearing history: {e}")
+            logger.error(f"Error clearing history: {e}", exc_info=True)
 
 # Пример использования:
 if __name__ == "__main__":

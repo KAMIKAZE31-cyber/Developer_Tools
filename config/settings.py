@@ -63,7 +63,14 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "tools" / "templates"],
+        "DIRS": [
+            BASE_DIR / "tools" / "templates",
+            BASE_DIR / "base64_tools" / "templates",
+            BASE_DIR / "color_HTML" / "templates",
+            BASE_DIR / "rimski_number" / "templates",
+            BASE_DIR / "preobrazovarel" / "templates",
+            BASE_DIR / "token_generator" / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

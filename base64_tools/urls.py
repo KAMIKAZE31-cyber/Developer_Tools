@@ -6,5 +6,5 @@ from . import views
 app_name = 'base64_tools'  # Добавляем пространство имен
 
 urlpatterns = [
-    path('', views.base64_tool, name='home'),
+    path('', views.base64_view, name='home'),
 ]

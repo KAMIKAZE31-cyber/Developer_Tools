@@ -4,67 +4,174 @@ from .tools import base64_encode, base64_decode
 import sys
 import os
 import logging
+from django.http import JsonResponse
+import base64
+import json
+from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
 
 # Добавляем путь к корневой директории проекта
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from history_manager import HistoryManager
 
-# Создаем экземпляр HistoryManager
-history = HistoryManager('base64_tools_history.json')
-logger.info("Initialized HistoryManager for base64_tools")
+def get_history_file_path():
+    """Получает путь к файлу истории"""
+    history_dir = 'history_files'
+    if not os.path.exists(history_dir):
+        os.makedirs(history_dir)
+    return os.path.join(history_dir, 'base64_tools_history.json')
 
-@login_required
-def base64_tool(request):
-    encoded = ''
-    decoded = ''
-    input_text = ''
+def add_to_history(action, text, result, additional_info=None):
+    """Добавляет запись в историю"""
+    history_file = get_history_file_path()
+    
+    # Читаем текущую историю
+    try:
+        with open(history_file, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        history = []
+    
+    # Создаем новую запись
+    entry = {
+        'timestamp': datetime.now().isoformat(),
+        'action': action,
+        'text': text,
+        'result': result
+    }
+    
+    # Добавляем дополнительную информацию, если она есть
+    if additional_info:
+        entry.update(additional_info)
+    
+    # Добавляем запись в историю
+    history.append(entry)
+    
+    # Сохраняем обновленную историю
+    with open(history_file, 'w', encoding='utf-8') as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
 
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        input_text = request.POST.get('text', '')
+def delete_from_history(timestamp):
+    """Удаляет запись из истории по временной метке"""
+    history_file = get_history_file_path()
+    
+    try:
+        with open(history_file, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+    
+    # Фильтруем историю, исключая запись с указанной временной меткой
+    history = [entry for entry in history if entry['timestamp'] != timestamp]
+    
+    # Сохраняем обновленную историю
+    with open(history_file, 'w', encoding='utf-8') as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+    
+    return True
+
+def clear_history():
+    """Очищает всю историю"""
+    history_file = get_history_file_path()
+    try:
+        with open(history_file, 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
+
+@csrf_exempt
+@require_http_methods(["GET", "POST", "DELETE"])
+def base64_view(request):
+    if request.method == "DELETE":
+        if request.GET.get('clear') == 'true':
+            if clear_history():
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({'error': 'Не удалось очистить историю'}, status=500)
         
-        logger.debug(f"Received POST request - Action: {action}, Text length: {len(input_text)}")
-
-        if action == 'encode':
-            logger.debug("Attempting to encode text")
-            encoded = base64_encode(input_text)
-            logger.debug(f"Encoded result: {encoded}")
-            # Добавляем запись в JSON историю
-            try:
-                history.add_entry("Base64 кодирование", {
-                    "user": request.user.username,
-                    "input_length": len(input_text),
-                    "output_length": len(encoded),
-                    "tool_url": '/base64_tools/'
-                })
-                logger.info("Successfully added history entry for encoding")
-            except Exception as e:
-                logger.error(f"Failed to add history entry: {e}")
-        elif action == 'decode':
-            logger.debug("Attempting to decode text")
-            decoded = base64_decode(input_text)
-            logger.debug(f"Decoded result: {decoded}")
-            # Добавляем запись в JSON историю
-            try:
-                history.add_entry("Base64 декодирование", {
-                    "user": request.user.username,
-                    "input_length": len(input_text),
-                    "output_length": len(decoded),
-                    "tool_url": '/base64_tools/'
-                })
-                logger.info("Successfully added history entry for decoding")
-            except Exception as e:
-                logger.error(f"Failed to add history entry: {e}")
-
-    return render(
-        request,
-        'tools/base64.html',
-        {
-            'encoded': encoded,
-            'decoded': decoded,
-            'input_text': input_text
-        }
-    )
+        timestamp = request.GET.get('timestamp')
+        if not timestamp:
+            return JsonResponse({'error': 'Не указана временная метка'}, status=400)
+        
+        if delete_from_history(timestamp):
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'error': 'Не удалось удалить запись'}, status=500)
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        text = request.POST.get('text', '').strip()
+        
+        if not action:
+            return JsonResponse({'error': 'Не указано действие (кодирование/декодирование)'}, status=400)
+        
+        if not text:
+            return JsonResponse({'error': 'Введите текст для обработки'}, status=400)
+        
+        try:
+            if action == 'encode':
+                # Кодирование в Base64
+                result = base64.b64encode(text.encode()).decode()
+                add_to_history(
+                    action='encode',
+                    text=text,
+                    result=result,
+                    additional_info={
+                        'operation': 'Кодирование',
+                        'input_type': 'Текст',
+                        'output_type': 'Base64'
+                    }
+                )
+                return JsonResponse({'result': result})
+            
+            elif action == 'decode':
+                # Декодирование из Base64
+                try:
+                    result = base64.b64decode(text.encode()).decode()
+                    add_to_history(
+                        action='decode',
+                        text=text,
+                        result=result,
+                        additional_info={
+                            'operation': 'Декодирование',
+                            'input_type': 'Base64',
+                            'output_type': 'Текст'
+                        }
+                    )
+                    return JsonResponse({'result': result})
+                except Exception as e:
+                    return JsonResponse({'error': 'Некорректная строка Base64'}, status=400)
+            
+            elif action == 'copy':
+                # Запись в историю при копировании
+                add_to_history(
+                    action='copy',
+                    text=text,
+                    result=text,
+                    additional_info={
+                        'operation': 'Копирование',
+                        'input_type': 'Текст',
+                        'output_type': 'Текст'
+                    }
+                )
+                return JsonResponse({'status': 'success'})
+            
+            else:
+                return JsonResponse({'error': 'Неизвестное действие'}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    # Читаем историю для отображения
+    history_file = get_history_file_path()
+    try:
+        with open(history_file, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        history = []
+    
+    return render(request, 'tools/base64.html', {'history': history})

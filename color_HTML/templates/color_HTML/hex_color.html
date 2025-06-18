@@ -32,6 +32,7 @@
                             <div class="color-history-item" onclick="selectColorFromHistory('{{ entry.details.color }}')" 
                                  style="background-color: {{ entry.details.color }};"
                                  title="{{ entry.details.color }}">
+                                <span class="color-hex">{{ entry.details.color }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -50,13 +51,17 @@
     // Создаем color picker
     var colorPicker = new iro.ColorPicker("#colorWheel", {
         width: 250,
-        color: "#000000",
+        color: "#ff0000", // Начальный цвет - красный
         borderWidth: 1,
         borderColor: "#ddd",
         layout: [
             {
                 component: iro.ui.Wheel,
-                options: {}
+                options: {
+                    wheelLightness: true,
+                    wheelAngle: 0,
+                    wheelDirection: 'clockwise'
+                }
             },
             {
                 component: iro.ui.Slider,
@@ -169,16 +174,33 @@
     }
 
     .color-history-item {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
         cursor: pointer;
         transition: transform 0.2s;
         border: 2px solid #ddd;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .color-history-item:hover {
         transform: scale(1.1);
+    }
+
+    .color-hex {
+        font-size: 10px;
+        color: #fff;
+        text-shadow: 0 0 2px rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.5);
+        padding: 2px 4px;
+        border-radius: 3px;
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 </style>
 {% endblock %} 
