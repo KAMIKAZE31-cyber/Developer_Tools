@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     #Myapps
     "tools",
-    "token_generator",
+    "password_generator",
     "base64_tools",
     "rimski_number",
     "preobrazovarel",

@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: developer_tools_web
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=your_secret_key_here
+    volumes:
+      - ./history_files:/app/history_files
+      - ./db.sqlite3:/app/db.sqlite3
+    restart: unless-stopped 

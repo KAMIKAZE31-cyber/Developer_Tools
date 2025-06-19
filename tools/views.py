@@ -115,7 +115,7 @@ def clear_history(request):
             'tools_history.json',
             'base64_tools_history.json',
             'color_HTML_history.json',
-            'token_generator_history.json',
+            'password_generator_history.json',
             'rimski_number_history.json',
             'preobrazovarel_history.json'
         ]
