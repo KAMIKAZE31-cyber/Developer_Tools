@@ -166,16 +166,40 @@ def list_converter(request):
         
         if text:
             lines = [line.strip() for line in text.split('\n') if line.strip()]
-            
+
+            # Обработка действий
+            if action == 'lowercase':
+                lines = [line.lower() for line in lines]
+            elif action == 'uppercase':
+                lines = [line.upper() for line in lines]
+            elif action == 'capitalize':
+                lines = [line.capitalize() for line in lines]
+            elif action == 'sentence':
+                # Каждое предложение с большой буквы (простая реализация)
+                import re
+                def sentence_case(line):
+                    return re.sub(r'(^|[.!?]\s+)([a-zа-яё])', lambda m: m.group(1) + m.group(2).upper(), line.lower())
+                lines = [sentence_case(line) for line in lines]
+            elif action == 'commas':
+                lines = [line + ',' for line in lines]
+            elif action == 'remove-spaces':
+                lines = [line.replace(' ', '') for line in lines]
+            elif action == 'trim-lines':
+                lines = [line.strip() for line in lines]
+
+            # Форматирование списка
             if format_type == 'bullet':
                 result = '\n'.join(f'• {line}' for line in lines)
                 action_desc = 'Маркированный список'
             elif format_type == 'numbered':
-                result = '\n'.join(f'{i+1}. {line}' for line in lines)
+                result = '\n'.join(f'{i+1}. {line}' for i, line in enumerate(lines))
                 action_desc = 'Нумерованный список'
             elif format_type == 'dashed':
                 result = '\n'.join(f'- {line}' for line in lines)
                 action_desc = 'Список с тире'
+            else:
+                result = '\n'.join(lines)
+                action_desc = 'Список'
             
             if action:
                 action_desc = f"{action_desc} с {action}"
