@@ -1,9 +1,18 @@
 [
   {
-    "timestamp": "2025-06-18T17:42:31.732009",
+    "timestamp": "2025-06-18T18:15:40.630191",
     "action": "encode",
-    "text": "при",
-    "result": "0L/RgNC4",
+    "text": "Привет мир!",
+    "result": "0J/RgNC40LLQtdGCINC80LjRgCE=",
+    "operation": "Кодирование",
+    "input_type": "Текст",
+    "output_type": "Base64"
+  },
+  {
+    "timestamp": "2025-06-18T18:21:27.710262",
+    "action": "encode",
+    "text": "Прощай земля",
+    "result": "0J/RgNC+0YnQsNC5INC30LXQvNC70Y8=",
     "operation": "Кодирование",
     "input_type": "Текст",
     "output_type": "Base64"
