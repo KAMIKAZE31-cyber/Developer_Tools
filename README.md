@@ -27,6 +27,9 @@ sudo apt install python3-pip
 git clone https://github.com/Developer-Tools/Developer_Tools.git
 cd Developer_Tools
 
+# Установка uv
+pip install uv
+
 # Создайте и активируйте виртуальное окружение
 python3 -m venv venv
 source venv/bin/activate
@@ -70,9 +73,6 @@ uv run manage.py runserver
 
 ---
 
-## 🤝 Contributing
-
-Pull requests приветствуются! Открывайте issue для обсуждения новых идей или багов.
 
 ---
 
