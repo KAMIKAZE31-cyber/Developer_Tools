@@ -103,6 +103,8 @@ uv run manage.py runserver
 ---
 
 ## ℹ️ About & Credits
+Me :)
+
 
 
 
