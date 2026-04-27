@@ -1,0 +1,41 @@
+[
+  {
+    "timestamp": "2026-04-16T16:17:37.548095",
+    "action": "Конвертация JSON в TOML",
+    "details": {
+      "user": "erop",
+      "input_length": 294,
+      "input_format": "json",
+      "tool_url": "/preobrazovarel/"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T16:18:26.222346",
+    "action": "Конвертация TOML в JSON",
+    "details": {
+      "user": "erop",
+      "input_length": 69,
+      "input_format": "toml",
+      "tool_url": "/preobrazovarel/"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T16:19:50.984058",
+    "action": "Ошибка конвертации",
+    "details": {
+      "error": "Неверный формат TOML",
+      "user": "erop",
+      "tool_url": "/preobrazovarel/"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T16:19:56.008176",
+    "action": "Конвертация JSON в TOML",
+    "details": {
+      "user": "erop",
+      "input_length": 294,
+      "input_format": "json",
+      "tool_url": "/preobrazovarel/"
+    }
+  }
+]
