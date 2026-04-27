@@ -149,13 +149,120 @@
             color: white;
         }
 
+        .mobile-back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            white-space: nowrap;
+        }
+
+        .card {
+            border-radius: 0.8rem;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 280px;
+            }
+
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar {
-                display: none;
+                position: static;
+                width: 100%;
+                height: auto;
+                max-height: 50vh;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+                margin-bottom: 0;
+                padding: 15px;
+                box-shadow: none;
+            }
+
+            .sidebar-header {
+                margin: -15px -15px 15px -15px;
+            }
+
+            .history-item:hover {
+                transform: none;
             }
 
             .main-content {
                 margin-left: 0;
+                padding: 15px;
+            }
+
+            .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .navbar .container {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .table-responsive table {
+                font-size: 0.9rem;
+            }
+
+            .mobile-back-link {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn {
+                min-height: 42px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .main-content {
+                padding: 12px;
+            }
+
+            .sidebar {
+                padding: 12px;
+            }
+
+            .sidebar-header {
+                margin: -12px -12px 12px -12px;
+            }
+
+            .history-item {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .history-action {
+                font-size: 0.9rem;
+            }
+
+            .history-details {
+                font-size: 0.85rem;
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .history-empty {
+                padding: 20px 12px;
             }
         }
 

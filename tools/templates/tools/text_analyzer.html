@@ -106,4 +106,39 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<style>
+@media (max-width: 768px) {
+    .row.mt-4 {
+        margin-top: 1rem !important;
+    }
+
+    .card .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #textInput {
+        min-height: 180px;
+    }
+
+    .card .d-flex.justify-content-between {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .card-header h2 {
+        font-size: 1.35rem;
+    }
+
+    .card-title {
+        font-size: 1.05rem;
+    }
+
+    .card .d-flex.justify-content-between span {
+        font-size: 0.92rem;
+    }
+}
+</style>
 {% endblock %} 

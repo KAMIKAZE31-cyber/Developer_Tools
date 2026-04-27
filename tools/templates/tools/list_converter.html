@@ -151,6 +151,34 @@ function copyToClipboard() {
         width: 100%;
         margin-bottom: 5px;
     }
+
+    .list-group-item .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 375px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    .card-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .form-control,
+    .form-select,
+    .btn {
+        font-size: 0.93rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .btn-group .btn {
+        font-size: 0.88rem;
+    }
 }
 </style>
 {% endblock %} 

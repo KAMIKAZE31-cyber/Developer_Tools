@@ -202,5 +202,59 @@
         left: 50%;
         transform: translateX(-50%);
     }
+
+    @media (max-width: 768px) {
+        #colorWheel {
+            max-width: 100%;
+        }
+
+        .input-group {
+            max-width: 100%;
+        }
+
+        .color-history-item {
+            width: 52px;
+            height: 52px;
+        }
+    }
+
+    @media (max-width: 375px) {
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem !important;
+        }
+
+        .color-preview {
+            height: 84px !important;
+        }
+
+        .input-group {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group .btn {
+            width: 100%;
+        }
+
+        .color-history {
+            gap: 8px;
+        }
+    }
+
+    @media (max-width: 320px) {
+        .color-history-item {
+            width: 46px;
+            height: 46px;
+        }
+
+        .color-hex {
+            font-size: 9px;
+        }
+    }
 </style>
 {% endblock %} 
